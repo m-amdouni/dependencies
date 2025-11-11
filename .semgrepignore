@@ -1,0 +1,52 @@
+# Semgrep Ignore File
+# Specify files and directories that should be excluded from Semgrep scanning
+
+# Build outputs
+target/
+build/
+out/
+bin/
+
+# Maven specific
+.mvn/wrapper/
+pom.xml.versionsBackup
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+
+# Test files (optional - remove if you want to scan tests)
+# **/test/**
+# **/*Test.java
+# **/*Tests.java
+
+# Generated code
+**/generated/**
+**/generated-sources/**
+**/generated-test-sources/**
+
+# Dependencies
+node_modules/
+vendor/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+# docs/
+
+# Configuration files (be careful with this)
+# *.yml
+# *.yaml
+# *.properties

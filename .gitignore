@@ -1,0 +1,56 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Security
+settings.xml
+*.key
+*.pem
+*.p12
+*.jks
+
+# Semgrep reports (config files should be tracked)
+semgrep-report.sarif
+semgrep-report.json
+.semgrep_cache/
+
+# JaCoCo
+jacoco.exec
+.jacoco/
+
+# Application specific
+application-local.yml
+application-local.properties
