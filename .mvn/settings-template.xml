@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <!--
+        Maven Settings Template for Artifactory Integration
+
+        Instructions:
+        1. Copy this file to ~/.m2/settings.xml
+        2. Replace placeholders with actual values:
+           - ${ARTIFACTORY_URL}: Your Artifactory server URL (e.g., https://artifactory.yourcompany.com/artifactory)
+           - ${ARTIFACTORY_USERNAME}: Your Artifactory username
+           - ${ARTIFACTORY_PASSWORD}: Your Artifactory password or API token (recommended)
+
+        Security Recommendations:
+        - Use API tokens instead of passwords
+        - Never commit settings.xml with credentials to version control
+        - Use encrypted passwords: https://maven.apache.org/guides/mini/guide-encryption.html
+        - Consider using CI/CD secrets for automated builds
+    -->
+
+    <servers>
+        <!-- Artifactory Release Repository -->
+        <server>
+            <id>artifactory-releases</id>
+            <username>${env.ARTIFACTORY_USERNAME}</username>
+            <password>${env.ARTIFACTORY_PASSWORD}</password>
+        </server>
+
+        <!-- Artifactory Snapshot Repository -->
+        <server>
+            <id>artifactory-snapshots</id>
+            <username>${env.ARTIFACTORY_USERNAME}</username>
+            <password>${env.ARTIFACTORY_PASSWORD}</password>
+        </server>
+
+        <!-- Artifactory Plugin Repository -->
+        <server>
+            <id>artifactory-plugins</id>
+            <username>${env.ARTIFACTORY_USERNAME}</username>
+            <password>${env.ARTIFACTORY_PASSWORD}</password>
+        </server>
+    </servers>
+
+    <mirrors>
+        <!-- Mirror all repositories through Artifactory for caching -->
+        <mirror>
+            <id>artifactory-mirror</id>
+            <name>Artifactory Mirror</name>
+            <url>${ARTIFACTORY_URL}/maven-virtual</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
+
+    <profiles>
+        <profile>
+            <id>artifactory</id>
+            <repositories>
+                <repository>
+                    <id>artifactory-releases</id>
+                    <name>Artifactory Release Repository</name>
+                    <url>${ARTIFACTORY_URL}/libs-release</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>artifactory-snapshots</id>
+                    <name>Artifactory Snapshot Repository</name>
+                    <url>${ARTIFACTORY_URL}/libs-snapshot</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>artifactory-plugins</id>
+                    <name>Artifactory Plugin Repository</name>
+                    <url>${ARTIFACTORY_URL}/plugins-release</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>artifactory</activeProfile>
+    </activeProfiles>
+
+</settings>
