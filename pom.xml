@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>dependencies</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>dependencies</name>
+    <description>Spring Boot application with Docker support</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Docker image properties -->
+        <docker.image.name>${project.artifactId}</docker.image.name>
+        <docker.image.tag>${project.version}</docker.image.tag>
+
+        <!-- Artifactory properties (override in settings.xml or via -D) -->
+        <docker.registry.url>https://your-artifactory.company.com/docker</docker.registry.url>
+        <docker.registry.username></docker.registry.username>
+        <docker.registry.password></docker.registry.password>
+
+        <!-- Code quality plugin versions -->
+        <sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
+        <semgrep-maven-plugin.version>1.0.0</semgrep-maven-plugin.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <!-- Use Paketo buildpacks -->
+                        <builder>paketobuildpacks/builder-jammy-base:latest</builder>
+                        <name>${docker.image.name}:${docker.image.tag}</name>
+                        <env>
+                            <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                            <BPE_DELIM_JAVA_TOOL_OPTIONS xml:space="preserve"> </BPE_DELIM_JAVA_TOOL_OPTIONS>
+                            <BPE_APPEND_JAVA_TOOL_OPTIONS>-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0</BPE_APPEND_JAVA_TOOL_OPTIONS>
+                        </env>
+                        <buildpacks>
+                            <buildpack>gcr.io/paketo-buildpacks/java</buildpack>
+                        </buildpacks>
+                    </image>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- ====================================================================== -->
+        <!-- Profile: docker-local                                                  -->
+        <!-- Purpose: Build Docker images locally for development                   -->
+        <!-- Usage: mvn clean package spring-boot:build-image -P docker-local       -->
+        <!-- ====================================================================== -->
+        <profile>
+            <id>docker-local</id>
+            <properties>
+                <docker.image.name>${project.artifactId}</docker.image.name>
+                <docker.image.tag>local-${project.version}</docker.image.tag>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <image>
+                                <builder>paketobuildpacks/builder-jammy-base:latest</builder>
+                                <name>${docker.image.name}:${docker.image.tag}</name>
+                                <env>
+                                    <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                                    <BPE_DELIM_JAVA_TOOL_OPTIONS xml:space="preserve"> </BPE_DELIM_JAVA_TOOL_OPTIONS>
+                                    <BPE_APPEND_JAVA_TOOL_OPTIONS>-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005</BPE_APPEND_JAVA_TOOL_OPTIONS>
+                                </env>
+                                <buildpacks>
+                                    <buildpack>gcr.io/paketo-buildpacks/java</buildpack>
+                                </buildpacks>
+                                <!-- Local development optimizations -->
+                                <publish>false</publish>
+                            </image>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-image</id>
+                                <goals>
+                                    <goal>build-image</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ====================================================================== -->
+        <!-- Profile: docker-corp                                                   -->
+        <!-- Purpose: Build and push Docker images to corporate Artifactory         -->
+        <!-- Usage: mvn clean package spring-boot:build-image -P docker-corp       -->
+        <!--        -Ddocker.registry.url=<url>                                     -->
+        <!--        -Ddocker.registry.username=<user>                               -->
+        <!--        -Ddocker.registry.password=<pass>                               -->
+        <!-- ====================================================================== -->
+        <profile>
+            <id>docker-corp</id>
+            <properties>
+                <docker.image.name>${docker.registry.url}/${project.artifactId}</docker.image.name>
+                <docker.image.tag>${project.version}</docker.image.tag>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <image>
+                                <builder>paketobuildpacks/builder-jammy-base:latest</builder>
+                                <name>${docker.image.name}:${docker.image.tag}</name>
+                                <env>
+                                    <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                                    <BPE_DELIM_JAVA_TOOL_OPTIONS xml:space="preserve"> </BPE_DELIM_JAVA_TOOL_OPTIONS>
+                                    <BPE_APPEND_JAVA_TOOL_OPTIONS>-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0</BPE_APPEND_JAVA_TOOL_OPTIONS>
+                                </env>
+                                <buildpacks>
+                                    <buildpack>gcr.io/paketo-buildpacks/java</buildpack>
+                                </buildpacks>
+                                <!-- Enable publishing to registry -->
+                                <publish>true</publish>
+                                <!-- Docker registry authentication -->
+                                <publishRegistry>
+                                    <url>${docker.registry.url}</url>
+                                    <username>${docker.registry.username}</username>
+                                    <password>${docker.registry.password}</password>
+                                </publishRegistry>
+                            </image>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-and-push-image</id>
+                                <goals>
+                                    <goal>build-image</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ====================================================================== -->
+        <!-- Profile: code-quality                                                  -->
+        <!-- Purpose: Run code quality checks (SonarQube and Semgrep)              -->
+        <!-- Usage: mvn verify -P code-quality                                      -->
+        <!--        mvn sonar:sonar -P code-quality (for SonarQube only)           -->
+        <!-- ====================================================================== -->
+        <profile>
+            <id>code-quality</id>
+            <properties>
+                <!-- SonarQube properties (override in settings.xml or via -D) -->
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+                <sonar.login></sonar.login>
+                <!-- Semgrep properties -->
+                <semgrep.config>auto</semgrep.config>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- SonarQube Maven Plugin -->
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>${sonar-maven-plugin.version}</version>
+                    </plugin>
+
+                    <!-- Exec Maven Plugin for Semgrep -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>semgrep-scan</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>semgrep</executable>
+                                    <arguments>
+                                        <argument>scan</argument>
+                                        <argument>--config</argument>
+                                        <argument>${semgrep.config}</argument>
+                                        <argument>--json</argument>
+                                        <argument>--output</argument>
+                                        <argument>${project.build.directory}/semgrep-report.json</argument>
+                                    </arguments>
+                                    <skip>${skipTests}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
