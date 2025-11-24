@@ -11,12 +11,128 @@ Spring Boot application with Docker support using Paketo buildpacks.
 
 ## Technology Stack
 
+### Core Framework
 - **Spring Boot**: 3.5.8
 - **Java**: 17 (LTS)
 - **Maven**: 3.9+
 - **Paketo Buildpacks**: Latest
+
+### Validation & Utilities
+- **Hibernate Validator**: 8.0.x (via spring-boot-starter-validation)
+- **Lombok**: 1.18.40 (Spring Boot managed)
+- **MapStruct**: 1.6.3
+- **Apache Commons Lang3**: (Spring Boot managed)
+- **Apache Commons Collections4**: (Spring Boot managed)
+- **Apache Commons IO**: (Spring Boot managed)
+
+### Code Quality Tools
 - **SonarQube Maven Plugin**: 4.0.0.4121
 - **Exec Maven Plugin**: 3.5.0
+
+## Validation & Utility Libraries
+
+This project includes comprehensive validation and utility libraries that are fully compatible with Spring Boot 3.5.8 and Java 17.
+
+### Bean Validation with Hibernate Validator
+
+The project uses **Jakarta Bean Validation 3.0** via `spring-boot-starter-validation`. All validation annotations use the `jakarta.validation.constraints` package.
+
+**Example usage:**
+```java
+@Data
+public class UserDTO {
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50)
+    private String username;
+
+    @Email(message = "Email should be valid")
+    private String email;
+}
+```
+
+See `UserDTO.java` for a complete example.
+
+### Lombok - Code Generation
+
+**Lombok 1.18.40** reduces boilerplate code with annotations like `@Data`, `@Builder`, `@Slf4j`, etc.
+
+**Example usage:**
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    private Long id;
+    private String username;
+    private String email;
+}
+```
+
+**Note**: The maven-compiler-plugin is configured with annotation processor paths for proper Lombok compilation.
+
+### MapStruct - Object Mapping
+
+**MapStruct 1.6.3** provides type-safe bean mapping between entities and DTOs.
+
+**Example usage:**
+```java
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    UserDTO toDto(User user);
+    User toEntity(UserDTO userDTO);
+}
+```
+
+See `UserMapper.java` for a complete example with update methods.
+
+**Important**: The annotation processors are configured in the correct order:
+1. Lombok (processed first)
+2. MapStruct (processed after Lombok)
+3. Lombok-MapStruct binding (ensures compatibility)
+
+### Apache Commons Utilities
+
+Three Apache Commons libraries are included:
+
+**Commons Lang3** - String and Object utilities:
+```java
+StringUtils.isBlank(username)
+StringUtils.capitalize(text)
+```
+
+**Commons Collections4** - Enhanced collection utilities:
+```java
+CollectionUtils.isEmpty(list)
+CollectionUtils.union(list1, list2)
+```
+
+**Commons IO** - File and stream utilities:
+```java
+FileUtils.readFileToString(file, charset)
+IOUtils.copy(input, output)
+```
+
+### Working Example
+
+A complete working example is available in the `UserController` class:
+- **Validation**: `@Valid` on request bodies
+- **Lombok**: `@Slf4j`, `@RequiredArgsConstructor`
+- **MapStruct**: Entity/DTO conversion
+- **Apache Commons**: String manipulation
+
+**Test the API:**
+```bash
+# Create a user (valid)
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"johndoe","email":"john@example.com","bio":"Developer"}'
+
+# Create a user (invalid email - will fail validation)
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"johndoe","email":"invalid","bio":"Developer"}'
+```
 
 ## Building the Application
 
