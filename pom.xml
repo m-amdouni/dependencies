@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>3.5.8</version>
         <relativePath/>
     </parent>
 
@@ -19,6 +19,7 @@
     <description>Spring Boot application with Docker support</description>
 
     <properties>
+        <!-- Java version (17 LTS, fully compatible with Spring Boot 3.5.x) -->
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -34,7 +35,8 @@
         <docker.registry.password></docker.registry.password>
 
         <!-- Code quality plugin versions -->
-        <sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
         <semgrep-maven-plugin.version>1.0.0</semgrep-maven-plugin.version>
     </properties>
 
@@ -208,7 +210,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>${exec-maven-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>semgrep-scan</id>

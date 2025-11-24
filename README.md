@@ -4,10 +4,19 @@ Spring Boot application with Docker support using Paketo buildpacks.
 
 ## Prerequisites
 
-- Java 17 or higher
-- Maven 3.6+
+- Java 17 or higher (LTS)
+- Maven 3.9+
 - Docker Desktop or Docker Engine
 - (Optional) Semgrep for code quality checks
+
+## Technology Stack
+
+- **Spring Boot**: 3.5.8
+- **Java**: 17 (LTS)
+- **Maven**: 3.9+
+- **Paketo Buildpacks**: Latest
+- **SonarQube Maven Plugin**: 4.0.0.4121
+- **Exec Maven Plugin**: 3.5.0
 
 ## Building the Application
 
@@ -158,7 +167,7 @@ The project uses the following Paketo buildpack features:
 
 - **Builder**: `paketobuildpacks/builder-jammy-base:latest`
 - **Java Buildpack**: `gcr.io/paketo-buildpacks/java`
-- **JVM Version**: Java 17
+- **JVM Version**: Java 17 (configurable via BP_JVM_VERSION)
 - **Memory Settings**: Uses 75% of container memory
 - **Container Support**: Optimized for containerized environments
 
@@ -172,6 +181,8 @@ You can customize buildpack behavior using environment variables in `pom.xml`:
   <BPE_APPEND_JAVA_TOOL_OPTIONS>-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0</BPE_APPEND_JAVA_TOOL_OPTIONS>
 </env>
 ```
+
+**Note**: You can specify a different Java version (e.g., 21) by changing the `BP_JVM_VERSION` environment variable.
 
 ## CI/CD Pipeline Example
 
